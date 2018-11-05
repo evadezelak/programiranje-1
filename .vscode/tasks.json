@@ -4,9 +4,29 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "echo",
+            "label": "run file in python",
             "type": "shell",
-            "command": "echo Hello"
+            "command": "python",
+            "args": [
+                "-i",
+               {
+                 "value": "${file}",
+                 "quoting": "escape"
+               }
+            ]
+        }
+        ,
+        {
+            "label": "run file in ocaml",
+            "type": "shell",
+            "command": "ocaml",
+            "args": [
+                "-init",
+               {
+                 "value": "${file}",
+                 "quoting": "escape"
+               }
+            ]
         }
     ]
 }

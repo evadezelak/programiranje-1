@@ -9,7 +9,18 @@
  - : int = 3
 [*----------------------------------------------------------------------------*)
 
-let rec penultimate_element = ()
+let rec penultimate_element list = 
+  match list with
+  | [] -> failwith "List too short." (* če je seznam prazen, je prekratek*)
+  | x :: [] -> failwith "List too short." (*če ima seznam en element, je prekratek*)
+  | x :: y :: [] -> x (*seznam ima dva elementa - kul*)
+  | x :: y :: ys -> penultimate_element (y :: ys) 
+
+let rec penultimate_element = function (* da bomo meli manj spremenljivk - uporabimo lahko podčrtaje*)
+  | [] | _ :: [] -> failwith "List too short." (*če ima seznam en element, je prekratek*)
+  | x :: _ :: [] -> x (*seznam ima dva elementa - kul*)
+  | _ :: y :: ys -> penultimate_element (y :: ys) 
+
 
 (*----------------------------------------------------------------------------*]
  Funkcija [get k list] poišče [k]-ti element v seznamu [list]. Številčenje
@@ -20,7 +31,17 @@ let rec penultimate_element = ()
  - : int = 1
 [*----------------------------------------------------------------------------*)
 
-let rec get = ()
+let rec get k list = (*tukaj ne moremo uporabiti function, ker matchamo dva argumenta*)
+  match k, list with
+  | _, [] -> failwith "List too short."
+  | k, x :: xs when k <= 0 -> x (* če je k manjši ali enak nič, vrnemo ničti element, sicer gremo naprej rekurzivno*)
+  | k, x :: xs -> get (k-1) xs
+
+let rec get k = function (*ugotovimo, da ubistvu ne rabimo biti odvisni od obeh argumentov, zato lahko damo function*)
+  | [] -> failwith "List too short."
+  | x :: xs when k <= 0 -> x (* če je k manjši ali enak nič, vrnemo ničti element, sicer gremo naprej rekurzivno*)
+  | x :: xs -> get (k-1) xs
+
 
 (*----------------------------------------------------------------------------*]
  Funkcija [double] podvoji pojavitve elementov v seznamu.
@@ -29,7 +50,10 @@ let rec get = ()
  - : int list = [1; 1; 2; 2; 3; 3]
 [*----------------------------------------------------------------------------*)
 
-let rec double = ()
+let rec double = function
+  | [] -> []
+  | x :: [] -> x :: x :: []
+  | x :: xs -> x :: x :: double xs 
 
 (*----------------------------------------------------------------------------*]
  Funkcija [divide k list] seznam razdeli na dva seznama. Prvi vsebuje prvih [k]
@@ -42,7 +66,14 @@ let rec double = ()
  - : int list * int list = ([1; 2; 3; 4; 5], [])
 [*----------------------------------------------------------------------------*)
 
-let rec divide = ()
+let rec divide k list =
+  match k, list with
+  | k, list when (k <= 0) -> ([], list)
+  | k, [] -> ([], [])
+  | k, x :: xs -> 
+    let (left_list, right_list) = divide (k-1) xs in
+    (x :: left_list, right_list)
+
 
 (*----------------------------------------------------------------------------*]
  Funkcija [delete k list] iz seznama izbriše [k]-ti element. V primeru
@@ -52,7 +83,11 @@ let rec divide = ()
  - : int list = [0; 0; 0; 0; 0]
 [*----------------------------------------------------------------------------*)
 
-let rec delete = ()
+let rec delete k list =
+  match k, list with
+  | _, [] -> failwith "List too short."
+  | 0, x :: xs -> xs
+  | k, x :: xs -> x :: delete (k-1) xs
 
 (*----------------------------------------------------------------------------*]
  Funkcija [slice i k list] sestavi nov seznam, ki vsebuje elemente seznama
@@ -129,4 +164,4 @@ let rec max_on_components = ()
  - : int = 10
 [*----------------------------------------------------------------------------*)
 
-let rec second_largest = ()
+let rec second_largest = ();;
