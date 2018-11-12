@@ -4,7 +4,9 @@
 Namig: Definirajte pomožno funkcijo za obračanje seznamov.
 [*----------------------------------------------------------------------------*)
 
-let rec reverse = ()
+let rec reverse = function
+  | [] -> []
+  | x :: xs -> reverse xs @ [x]
 
 (*----------------------------------------------------------------------------*]
  Funkcija [repeat x n] vrne seznam [n] ponovitev vrednosti [x]. Za neprimerne
@@ -16,7 +18,21 @@ let rec reverse = ()
  - : string list = []
 [*----------------------------------------------------------------------------*)
 
-let rec repeat = ()
+let rec repeat x n = 
+  if n <= 0 then
+    []
+  else
+    x :: repeat x (n - 1)
+
+let rec repeat x n = (*takšne funkcije uporabljamo, da ne pride do stack overflowa*)
+  let rec repeat' x n acc =
+    if n <= 0 then
+      acc
+    else
+      let new_acc = x :: acc in
+      repeat' x (n - 1) new_acc
+  in
+  repeat' x n []
 
 (*----------------------------------------------------------------------------*]
  Funkcija [range] sprejme število in vrne seznam vseh celih števil od 0 do
@@ -27,7 +43,34 @@ let rec repeat = ()
  - : int list = [0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10]
 [*----------------------------------------------------------------------------*)
 
-let rec range = ()
+let rec range n =
+  if n < 0 then
+    []
+  else
+    (range (n - 1)) @ [n]
+
+
+let rec range n = 
+  let rec range' n acc = 
+    if n < 0 then 
+      acc (*s tem vrnemo vse, kar smo naredili do sedaj, to je akumulator*)
+    else
+      range' (n - 1) (n :: acc)
+  in 
+  range' n []
+
+
+let rec test_bad n acc = (*hočemo, da nam naredi seznam dolžine n, le da bo v tem primeru akumulator dodajal na konec, kar bo počasnejše*)
+    if n < 0 then
+      []
+    else
+      test_bad (n - 1) (acc @ [0])
+
+let rec test_good n acc = (*hočemo, da nam naredi seznam dolžine n, tukaj bomo dodajali na začetek*)
+    if n < 0 then
+      []
+    else
+      test_good (n - 1) (0 :: acc)
 
 (*----------------------------------------------------------------------------*]
  Funkcija [map f list] sprejme seznam [list] oblike [x0; x1; x2; ...] in
@@ -39,7 +82,9 @@ let rec range = ()
  - : int list = [2; 3; 4; 5; 6]
 [*----------------------------------------------------------------------------*)
 
-let rec map = ()
+let rec map f = function
+| [] -> []
+| x :: xs -> f x :: map f xs  (*f x pomeni f(x), ker pišemo brez oklepajev*)
 
 (*----------------------------------------------------------------------------*]
  Funkcija [map_tlrec] je repno rekurzivna različica funkcije [map].
@@ -49,7 +94,14 @@ let rec map = ()
  - : int list = [2; 3; 4; 5; 6]
 [*----------------------------------------------------------------------------*)
 
-let rec map_tlrec = ()
+let rec map_tlrec f list =
+  let rec map_tlrec' acc f list = 
+    match list with
+    | [] -> acc
+    | x :: xs -> map_tlrec' (f x :: acc) f xs
+  in
+  reverse(map_tlrec' [] f list)
+  
 
 (*----------------------------------------------------------------------------*]
  Funkcija [mapi] sprejme seznam in funkcijo dveh argumentov ter vrne seznam
@@ -60,7 +112,13 @@ let rec map_tlrec = ()
  - : int list = [0; 1; 2; 5; 6; 7]
 [*----------------------------------------------------------------------------*)
 
-let rec mapi = ()
+let rec mapi f list =
+  let rec mapi' acc stevec f list =
+    match list with
+    | [] -> acc
+    | x :: xs -> mapi' (f x stevec :: acc) (stevec + 1) f xs
+  in
+  reverse(mapi' [] 0 f list)
 
 (*----------------------------------------------------------------------------*]
  Funkcija [zip] sprejme dva seznama in vrne seznam parov istoležnih
@@ -72,7 +130,15 @@ let rec mapi = ()
  Exception: Failure "Different lengths of input lists.".
 [*----------------------------------------------------------------------------*)
 
-let rec zip = ()
+let rec zip list1 list2 =
+  let rec zip' acc list1 list2 =
+    match list1, list2 with
+      | [], [] -> acc
+      | _, [] -> failwith "Different lengths of input lists."
+      | [], _ -> failwith "Different lengths of input lists."
+      | x :: xs, y :: ys -> zip' ((x, y) :: acc) xs ys
+  in
+  reverse(zip' [] list1 list2)
 
 (*----------------------------------------------------------------------------*]
  Funkcija [zip_enum_tlrec] sprejme seznama [x_0; x_1; ...] in [y_0; y_1; ...]
@@ -83,7 +149,15 @@ let rec zip = ()
  - : (int * string * int) list = [(0, "a", 7); (1, "b", 3); (2, "c", 4)]
 [*----------------------------------------------------------------------------*)
 
-let rec zip_enum_tlrec = ()
+let rec zip_enum_tlrec list1 list2 = 
+  let rec zip_enum_tlrec' acc stevec list1 list2 =
+    match list1, list2 with
+      | [], [] -> acc
+      | _, [] -> failwith "Different lengths of input lists."
+      | [], _ -> failwith "Different lengths of input lists."
+      | x :: xs, y :: ys -> zip_enum_tlrec' ((stevec, x, y) :: acc) stevec xs ys
+  in
+  reverse(zip_enum_tlrec' [] 0 list1 list2)
 
 (*----------------------------------------------------------------------------*]
  Funkcija [unzip] je inverz funkcije [zip], torej sprejme seznam parov
@@ -102,7 +176,13 @@ let rec unzip = ()
  - : int list * string list = ([0; 1; 2], ["a"; "b"; "c"])
 [*----------------------------------------------------------------------------*)
 
-let rec unzip_tlrec = ()
+let rec unzip_tlrec seznam_parov =
+  let rec unzip_tlrec' acc1 acc2 seznam_parov = 
+    match seznam_parov with
+    | [] -> (reverse acc1, reverse acc2)
+    | x :: xs -> unzip_tlrec' (fst x :: acc1) (snd x :: acc2) xs
+  in
+  unzip_tlrec' [] [] seznam_parov
 
 (*----------------------------------------------------------------------------*]
  Funkcija [fold_left_no_acc f list] sprejme seznam [x0; x1; ...; xn] in
@@ -114,7 +194,10 @@ let rec unzip_tlrec = ()
  - : string = "FICUS"
 [*----------------------------------------------------------------------------*)
 
-let rec fold_left_no_acc = ()
+let rec fold_left_no_acc list f = 
+  match list with
+  | [], _ :: [] -> failwith "Premalo elementov"
+  | x :: xs -> x fold_left_no_acc xs f (*to ni kul, ločit je treba več primerov, recimo za tri posebej*)
 
 (*----------------------------------------------------------------------------*]
  Funkcija [apply_sequence f x n] vrne seznam zaporednih uporab funkcije [f] na
