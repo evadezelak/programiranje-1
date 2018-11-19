@@ -46,7 +46,7 @@ let rec get k = function (*ugotovimo, da ubistvu ne rabimo biti odvisni od obeh 
 (*----------------------------------------------------------------------------*]
  Funkcija [double] podvoji pojavitve elementov v seznamu.
  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
- # podvoji [1; 2; 3];;
+ # double [1; 2; 3];;
  - : int list = [1; 1; 2; 2; 3; 3]
 [*----------------------------------------------------------------------------*)
 
