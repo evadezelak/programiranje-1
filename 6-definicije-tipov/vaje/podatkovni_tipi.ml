@@ -21,7 +21,19 @@
  - : euro = Euro 0.4305
 [*----------------------------------------------------------------------------*)
 
+type euro = Euro of float
+type dollar = Dollar of float
 
+
+
+let dollar_to_euro_bad dollar = 0.2 *. dollar
+
+let dollar_to_euro_good dollar =
+  match dollar with
+  |Dollar v -> Euro (0.2 *. v)
+
+
+  
 
 (*----------------------------------------------------------------------------*]
  Definirajte tip [currency] kot en vsotni tip z konstruktorji za jen, funt
@@ -35,7 +47,16 @@
  - : currency = Pound 0.007
 [*----------------------------------------------------------------------------*)
 
+type currency = 
+  | Yen of float
+  | Pound of float
+  | Krona of float
 
+let to_pound c =
+  match c with
+  | Yen v -> Pound (1. *. v)
+  | Pound v -> Pound v
+  | Krona v -> Pound 0. (*Treba je imet float, zato lahko narediš kar številka. in bo kul*)
 
 (*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*]
  Želimo uporabljati sezname, ki hranijo tako cela števila kot tudi logične
@@ -48,6 +69,10 @@
  x :: xs v Ocamlu).
 [*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*)
 
+type 'a list =
+  | Empty
+  | Cons of 'a * 'a list
+
 (*----------------------------------------------------------------------------*]
  Definirajte tip [intbool_list] z konstruktorji za:
   1.) prazen seznam,
@@ -57,7 +82,14 @@
  Nato napišite testni primer, ki bi predstavljal "[5; true; false; 7]".
 [*----------------------------------------------------------------------------*)
 
+type intbool_list = 
+  | Empty
+  | Integer of int * intbool_list 
+  | Bool of bool * intbool_list
 
+  (*vsi ti konstruktorji sprejmejo en element, lahko upšorabimo na primer Integer (x, y) ker to ne podamo dveh argumentov, ampak en par argumentov*)
+
+let primer = Integer(5, Bool(true, Bool(false, Integer(7, Empty))))
 
 (*----------------------------------------------------------------------------*]
  Funkcija [intbool_map f_int f_bool ib_list] preslika vrednosti [ib_list] v nov
@@ -65,14 +97,36 @@
  oz. [f_bool].
 [*----------------------------------------------------------------------------*)
 
-let rec intbool_map = ()
+let res map f = function
+  | [] -> []
+  | x :: xs -> (f x) :: map f xs
+
+(* let rec map_ugly f = function
+    | Empty -> Empty
+    | Cons(x, xs) -> Cons(f x, map_ugly f xs)
+*)
+
+let rec intbool_map (f_int : int -> int) (f_bool : bool -> bool) = function
+  | Empty -> Empty
+  | Integer (i, xs) -> Integer (f_int i, intbool_map f_int f_bool xs)
+  | Bool (i, xs) -> Bool (f_bool i, intbool_map f_int f_bool xs)
 
 (*----------------------------------------------------------------------------*]
  Funkcija [intbool_reverse] obrne vrstni red elementov [intbool_list] seznama.
  Funkcija je repno rekurzivna.
 [*----------------------------------------------------------------------------*)
 
-let rec intbool_reverse = ()
+let rec intbool_reverse list = 
+  let rec intbool_reverse' (acc : intbool_list) = function
+    | Empty -> acc
+    | Integer (x, xs) -> 
+        let new_acc = Integer(x, acc) in
+        intbool_reverse' new_acc xs
+    | Bool (x, xs) -> 
+        let new_acc = Bool(x, acc) in
+        intbool_reverse' new_acc xs 
+  in 
+  intbool_reverse' Empty list
 
 (*----------------------------------------------------------------------------*]
  Funkcija [intbool_separate ib_list] loči vrednosti [ib_list] v par [list]
@@ -80,7 +134,14 @@ let rec intbool_reverse = ()
  vrednosti. Funkcija je repno rekurzivna in ohranja vrstni red elementov.
 [*----------------------------------------------------------------------------*)
 
-let rec intbool_separate = ()
+let rec intbool_separate ib_list =
+  let rec separate' acc1 acc2 ib_list =
+    match ib_list with
+    | Empty -> (acc1, acc2)
+    | Integer (x, xs) -> separate' (acc1 @ [x]) acc2 xs
+    | Bool (x, xs) -> separate' acc1 (acc2 @ [x]) xs
+  in separate' [] [] ib_list
+  
 
 (*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*]
  Določeni ste bili za vzdrževalca baze podatkov za svetovno priznano čarodejsko
