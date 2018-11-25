@@ -222,11 +222,11 @@ let rec fold_left_no_acc f list =
 
 let rec apply_sequence f x n =
   let rec apply' acc f x n =
-    match f, x, n with
-    | f, x, n when n < 1 -> acc
-    | f, x, n -> apply' (f x :: acc) f(f x) (n - 1)
+    match x, n with
+    | x, n when n < 1 -> acc
+    | x, n -> apply' (x :: acc) f(f x) (n - 1)
   in
-  reverse(apply' [] f x n)
+  reverse(apply' [] f x (n+1))
 
 (*----------------------------------------------------------------------------*]
  Funkcija [filter f list] vrne seznam elementov [list], pri katerih funkcija [f]
