@@ -87,7 +87,7 @@ type intbool_list =
   | Integer of int * intbool_list 
   | Bool of bool * intbool_list
 
-  (*vsi ti konstruktorji sprejmejo en element, lahko upšorabimo na primer Integer (x, y) ker to ne podamo dveh argumentov, ampak en par argumentov*)
+  (*vsi ti konstruktorji sprejmejo en element, lahko uporabimo na primer Integer (x, y) ker to ne podamo dveh argumentov, ampak en par argumentov*)
 
 let primer = Integer(5, Bool(true, Bool(false, Integer(7, Empty))))
 
@@ -159,6 +159,15 @@ let rec intbool_separate ib_list =
  [specialisation], ki loči med temi zaposlitvami.
 [*----------------------------------------------------------------------------*)
 
+type magic = 
+  | Fire
+  | Frost
+  | Arcane
+
+type specialisation = 
+  | Historian
+  | Teacher
+  | Researcher
 
 
 (*----------------------------------------------------------------------------*]
@@ -176,7 +185,17 @@ let rec intbool_separate ib_list =
  - : wizard = {name = "Matija"; status = Employed (Fire, Teacher)}
 [*----------------------------------------------------------------------------*)
 
+type status = 
+  | Newbie 
+  | Student of magic * int 
+  | Employed of magic * specialisation
 
+type wizard = {
+  name : string;
+  status : status}
+
+let profesor = 
+  {name = "Matija"; status = Employed (Fire, Teacher)}
 
 (*----------------------------------------------------------------------------*]
  Želimo prešteti koliko uporabnikov posamezne od vrst magije imamo na akademiji.
@@ -189,6 +208,18 @@ let rec intbool_separate ib_list =
  - : magic_counter = {fire = 1; frost = 1; arcane = 2}
 [*----------------------------------------------------------------------------*)
 
+type magic_counter = {
+  fire : int;
+  frost : int;
+  arcane : int 
+}
+
+let update counter magic =
+  match magic with
+  | Fire -> {counter with fire = counter.fire + 1}
+  | Frost -> {counter with frost = counter.frost + 1}
+  | Arcane -> {counter with arcane = counter.arcane + 1}
+
 
 
 (*----------------------------------------------------------------------------*]
@@ -199,7 +230,17 @@ let rec intbool_separate ib_list =
  - : magic_counter = {fire = 3; frost = 0; arcane = 0}
 [*----------------------------------------------------------------------------*)
 
-let rec count_magic = ()
+let rec count_magic list =
+  let rec count' acc list = 
+    match list with
+    | [] -> acc
+    | x :: xs ->
+      match x.status with
+        | Newbie -> count' acc xs
+        | Student(magic, _) -> count' (update acc magic) xs
+        | Employed(magic, _) -> count' (update acc magic) xs
+
+  in count' {fire = 0; frost = 0; arcane = 0} list
 
 (*----------------------------------------------------------------------------*]
  Želimo poiskati primernega kandidata za delovni razpis. Študent lahko postane
@@ -215,4 +256,22 @@ let rec count_magic = ()
  - : string option = Some "Jaina"
 [*----------------------------------------------------------------------------*)
 
-let rec find_candidate = ()
+let rec find_candidate magic specialisation wizard_list = 
+  let appropriate wizard =
+    let required_years =
+      match specialisation with
+      | Historian -> 3
+      | Researcher -> 4
+      | Teacher -> 5
+    in
+    match wizard.status with
+      | Student(st_magic, years) when st_magic = magic -> (years >= required_years)
+      | Student(_, _) -> false
+      | Newbie -> false
+      | Employed (_, _) -> false
+  in
+  match wizard_list with
+    | [] -> None
+    | wizard :: ws -> 
+      if appropriate wizard then Some wizard.name
+else find_candidate magic specialisation ws
