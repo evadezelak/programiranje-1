@@ -173,6 +173,17 @@ let rec member x tree =
             else
                 member' x ys
     in member' x (list_of_tree tree)
+
+let rec insert n tree =
+    match tree with
+    | Empty -> Node(Empty, n, Empty)
+    | Node(levi, x, desni) ->
+        if n < x then
+            let nov_levi = insert n levi in
+            Node(nov_levi, x, desni)
+        else
+            let nov_desni = insert n desni in
+            Node(levi, x, nov_desni)
       
 
 (*----------------------------------------------------------------------------*]
@@ -182,6 +193,15 @@ let rec member x tree =
  funkcije [member2] na drevesu z n vozlišči, ki ima globino log(n). 
 [*----------------------------------------------------------------------------*)
 
+let rec member2 x tree =
+    let rec member' x  = function
+        | [] -> false
+        | y :: ys -> 
+            if y = x then
+                true
+            else
+                member' x ys
+    in member' x (list_of_tree tree)
 
 (*----------------------------------------------------------------------------*]
  Funkcija [succ] vrne naslednjika korena danega drevesa, če obstaja. Za drevo
@@ -195,6 +215,43 @@ let rec member x tree =
  # pred (Node(Empty, 5, leaf 7));;
  - : int option = None
 [*----------------------------------------------------------------------------*)
+
+let rec minimum tree = 
+    let rec minimum' = function
+    | [] -> failwith "Prazno drevo"
+    | x :: [] -> x
+    | x :: xs -> min x (minimum' xs)
+    in
+    minimum' (list_of_tree tree)
+
+let rec lepi_minimum tree = 
+    match tree with 
+    | Empty -> None
+    | Node(Empty, x, desni) -> Some x
+    | Node(levi, x, desni) -> lepi_minimum levi
+
+
+let rec succ tree = 
+    match tree with
+    | Empty -> None
+    | Node(levi, x, Empty) -> None
+    | Node(levi, x, desni) -> lepi_minimum desni
+
+
+let rec lepi_maksimum tree = 
+    match tree with
+    | Empty -> None
+    | Node(levi, x, Empty) -> Some x
+    | Node(levi, x, desni) -> lepi_maksimum desni
+
+let rec pred tree = 
+    match tree with 
+    | Empty -> None
+    | Node(Empty, x, desni) -> None
+    | Node(levi, x, desni) -> lepi_maksimum levi
+
+
+
 
 
 (*----------------------------------------------------------------------------*]
@@ -210,6 +267,23 @@ let rec member x tree =
  Node (Node (Empty, 6, Empty), 11, Empty))
 [*----------------------------------------------------------------------------*)
 
+let rec delete x tree = 
+    match tree with
+    | Empty -> Empty (*prazno drevo*)
+    | Node(Empty, y, Empty) when x = y -> (* leaf case*) Empty (*odstraanimo list, če je enak x*)
+    | Node(Empty, y, desni) when x = y ->(*one sided*) desni
+    | Node(levi, y, Empty) when x = y ->(*one sided*) levi
+    | Node(levi, y, desni) when x <> y -> (*recurse deeper*)
+        if x > y then
+            Node(levi, y, delete x desni)
+        else
+            Node(delete x levi, y, desni)
+    | Node(levi, y, desni) -> (*super fun case :D*)
+        match succ tree with (*poiščemo succesorja*)
+        | None -> failwith "Kako je to mogoče?!" (*vemo da se to sploh ne bo moglo zgoditi, ker smo none primer obravnavali že zgoraj*)
+        | Some z -> Node(levi, z, delete z desni) (*v desno drevo  gremo posikati succesorja in ga prenesemo gor*)
+
+
 
 (*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*]
  SLOVARJI
@@ -222,6 +296,7 @@ let rec member x tree =
  vrednosti, ga parametriziramo kot [('key, 'value) dict].
 [*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*)
 
+type ('key, 'value) dict = ('key * 'value) tree
 
 (*----------------------------------------------------------------------------*]
  Napišite testni primer [test_dict]:
@@ -232,6 +307,10 @@ let rec member x tree =
      "c":-2
 [*----------------------------------------------------------------------------*)
 
+let test_dict = 
+    let left_tree = Node(Empty, ("a", 0), Empty) in
+    let right_tree = Node(leaf ("c",-2), ("d", 2), Empty) in
+    Node(left_tree, ("b", 1) , right_tree)
 
 (*----------------------------------------------------------------------------*]
  Funkcija [dict_get key dict] v slovarju poišče vrednost z ključem [key]. Ker
@@ -242,6 +321,16 @@ let rec member x tree =
  # dict_get "c" test_dict;;
  - : int option = Some (-2)
 [*----------------------------------------------------------------------------*)
+
+let rec dict_get key dict = 
+    match dict with
+    | Empty -> None
+    | Node(levi, (k, v), desni) when k = key -> Some v
+    | Node(levi, (k, v), desni) ->
+        if k > key then
+            dict_get key levi
+        else
+            dict_get key desni
 
       
 (*----------------------------------------------------------------------------*]
