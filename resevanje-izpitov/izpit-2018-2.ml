@@ -25,22 +25,35 @@ type 'a neprazen_sez =
   | Konec of 'a 
   | Sestavljen of 'a * 'a neprazen_sez 
 
+let test = Sestavljen(5, Sestavljen(4, Sestavljen(6, Konec 7)))
+
 (*primer a*)
 let rec prvi seznam =
   match seznam with
-  | [] -> None
-  | x :: xs -> Some x
+  | Konec x 
+  | Sestavljen(x, _) -> Some x
 
 let rec zadnji seznam =
   match seznam with
-  | [] -> None
-  | x :: [] -> Some x
-  | x :: xs -> zadnji xs
+  | Konec x -> x
+  | Sestavljen(x, xs) -> zadnji xs
 
 (*primer b*)
 let rec dolzina seznam =
   let rec dolzina' stevec seznam =
     match seznam with
-    | [] -> stevec
-    | x :: xs -> dolzina' (stevec + 1) xs
+    | Konec x -> stevec + 1
+    | Sestavljen(x, xs) -> dolzina' (stevec + 1) xs
   in dolzina' 0 seznam
+
+(*primer c*)
+let rec pretvori_v_seznam neprazen =
+  match neprazen with
+  | Konec x -> [x]
+  | Sestavljen (x, xs) -> x :: (pretvori_v_seznam xs)
+
+(*primer d*)
+let rec zlozi f s neprazen =
+  match neprazen with
+  | Konec x -> f s x
+  | Sestavljen (x, xs) -> zlozi f (f s x) xs
