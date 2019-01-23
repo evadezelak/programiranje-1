@@ -7,7 +7,7 @@
 [*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*)
 
 type 'a tree = 
-    |Empty
+    | Empty
     | Node of 'a tree * 'a * 'a tree
 
 (*type 'a tree = 
@@ -349,6 +349,15 @@ let rec dict_get key dict =
  - : unit = ()
 [*----------------------------------------------------------------------------*)
 
+let rec print_dict = function
+    | Empty -> ()
+    | Node(ld, (k,v), rd) -> 
+        (print_dict ld);
+        (print_string(k));
+        (print_string(":"));
+        (print_int(v));
+        (print_string("\n"));
+        (print_dict rd)
 
 (*----------------------------------------------------------------------------*]
  Funkcija [dict_insert key value dict] v slovar [dict] pod ključ [key] vstavi
@@ -369,3 +378,12 @@ let rec dict_get key dict =
  - : unit = ()
 [*----------------------------------------------------------------------------*)
 
+let rec dict_insert kljuc vrednost slovar = 
+    match slovar with
+    | Empty ->  leaf(kljuc, vrednost)
+    | Node(levi, (k, v), desni) ->
+        if k = kljuc then Node(levi, (kljuc, vrednost), desni)
+        else if k < kljuc then
+            Node(levi, (k, v), dict_insert kljuc vrednost desni)
+        else
+            Node(dict_insert kljuc vrednost levi, (k, v), desni)

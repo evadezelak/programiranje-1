@@ -194,4 +194,10 @@ let rec max_on_components list1 list2 =
  - : int = 10
 [*----------------------------------------------------------------------------*)
 
-let rec second_largest = ();;
+let rec najvecja seznam = 
+  match seznam with
+  | [] -> failwith "List too short"
+  | x :: [] -> x
+  | x :: xs -> max x (najvecja xs)
+
+let rec second_largest = ()

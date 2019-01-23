@@ -27,13 +27,13 @@
 #     [10, 2, 0, 4, 11, 15, 17, 5, 18]
 ##############################################################################
 
-def pivot(a, start, end) : 
+def pivot(a, start, end): 
     pivot = a[start]
-    for i in range(start,end+1):
+    for i in range(start, end+1):
         if a[i] > pivot: 
-            for j in range(i+1,end+1):
+            for j in range(i+1, end+1):
                 if a[j] < pivot:
-                    a[i], a[j] =  a[j], a[i]
+                    a[i], a[j] = a[j], a[i]
                 
     for i in range(start, end+1):
         if a[i] > pivot:
